@@ -1,77 +1,123 @@
-licensefile:
-  class: File
-  path: license.pdf
-  url: https://api.dev.lifeomic.com/v1/files/2f869f9c-ca68-4978-b4e5-39bea12e7c84
+cwlVersion: v1.0
+class: Workflow
+inputs:
+  mobyfile: File
+  mobycountfilename: string
+  illiadfile: File
+  illiadcountfilename: string
+  aggregatecountfilename: string
+  licensefile: File
+  licensetextfilename: string
+  specfile: File
+  spectextfilename: string
+  licensetextfile: File
+  licensecountfilename: string
+  spectextfile: File
+  speccountfilename: string
+  pdfaggregatecountfilename: string
+  totalcountfilename: string
 
-licensetextfilename: license.txt
+outputs:
+   licenseconvertout:
+      type: File
+      outputSource: licenseconvert/licenseconvertout
+   licensecountout:
+      type: File
+      outputSource: licensecount/licensecountout
+   speccountout:
+      type: File
+      outputSource: speccount/speccountout
+   specconvertout:
+      type: File
+      outputSource: specconvert/specconvertout
+   mobycountout:
+      type: File
+      outputSource: mobycount/mobycountout
+   illiadcountout:
+      type: File
+      outputSource: illiadcount/illiadcountout
+   aggregatecountout:
+      type: File
+      outputSource: aggregator/aggregatecountout
+   pdfaggregatecountout:
+      type: File
+      outputSource: pdfaggregator/pdfaggregatecountout
+   totalaggregatorout:
+      type: File
+      outputSource: totalaggregator/totalcountout
 
-licensetextfile:
-  class: File
-  path: license.txt
-  url: https://api.dev.lifeomic.com/v1/datasets/d2876f48-724f-4987-9cf0-92c7ef99a9fa
-
-licensecountfilename: licensecount.txt
-
-spectextfile:
-  class: File
-  path: spec.txt
-  url: https://api.dev.lifeomic.com/v1/datasets/d2876f48-724f-4987-9cf0-92c7ef99a9fa
-
-speccountfilename: speccount.txt
-
-specfile:
-  class: File
-  path: spec.pdf
-  url: https://api.dev.lifeomic.com/v1/files/15ed43dd-65b3-42a7-939d-e6d89fccfea5
-
-spectextfilename: spec.txt
-
-mobyfile:
-  class: File
-  path: mobydick.txt
-  url: https://api.dev.lifeomic.com/v1/files/468a493e-c776-4fec-9456-83b3dbfe3ea5
-
-mobycountfilename: mobycount.txt
-
-illiadfile:
-  class: File
-  path: illiad.txt
-  url: https://api.dev.lifeomic.com/v1/files/9d6df312-eead-4320-a6cb-2adf937d43d3
-
-illiadcountfilename: illiadcount.txt
-
-mobycountfile:
-  class: File
-  path: mobycount.txt
-  url: https://api.dev.lifeomic.com/v1/datasets/d2876f48-724f-4987-9cf0-92c7ef99a9fa
-
-illiadcountfile:
-  class: File
-  path: illiadcount.txt
-  url: https://api.dev.lifeomic.com/v1/datasets/d2876f48-724f-4987-9cf0-92c7ef99a9fa
-
-aggregatecountfilename: aggregatecount.txt
-
-licensecountfile:
-  class: File
-  path: licensecount.txt
-  url: https://api.dev.lifeomic.com/v1/datasets/d2876f48-724f-4987-9cf0-92c7ef99a9fa
-
-speccountfile:
-  class: File
-  path: speccount.txt
-  url: https://api.dev.lifeomic.com/v1/datasets/d2876f48-724f-4987-9cf0-92c7ef99a9fa
-
-pdfaggregatecountfilename: pdfaggregatecount.txt
-
-wordcountfile:
-  class: File
-  path: aggregatecount.txt
-  url: https://api.dev.lifeomic.com/v1/datasets/d2876f48-724f-4987-9cf0-92c7ef99a9fa
-
-pdfcountfile:
-  class: File
-  path: pdfaggregatecount.txt
-  url: https://api.dev.lifeomic.com/v1/datasets/d2876f48-724f-4987-9cf0-92c7ef99a9fa
-
-totalcountfilename: totalcount.txt
+steps:
+  licenseconvert:
+    run: license-convert.cwl
+    in:
+      licensefile: licensefile
+      licensetextfilename: licensetextfilename
+    out:
+      [licenseconvertout]
+  licensecount:
+    run: license-count.cwl
+    in:
+      licensetextfile:
+        source: licenseconvert/licenseconvertout
+      licensecountfilename: licensecountfilename
+    out:
+      [licensecountout]
+  specconvert:
+    run: spec-convert.cwl
+    in:
+      specfile: specfile
+      spectextfilename: spectextfilename
+    out:
+      [specconvertout]
+  speccount:
+    run: spec-count.cwl
+    in:
+      spectextfile:
+        source: specconvert/specconvertout
+      speccountfilename: speccountfilename
+    out:
+      [speccountout]
+  mobycount:
+    run: moby-count.cwl
+    in:
+      mobyfile: mobyfile
+      mobycountfilename: mobycountfilename
+    out:
+      [mobycountout]
+  illiadcount:
+    run: illiad-count.cwl
+    in:
+      illiadfile: illiadfile
+      illiadcountfilename: illiadcountfilename
+    out:
+      [illiadcountout]
+  aggregator:
+    run: word-aggregator.cwl
+    in:
+      mobycountfile:
+        source: mobycount/mobycountout
+      illiadcountfile:
+        source: illiadcount/illiadcountout
+      aggregatecountfilename: aggregatecountfilename
+    out:
+      [aggregatecountout]
+  pdfaggregator:
+    run: pdf-aggregator.cwl
+    in:
+      licensecountfile:
+        source: licensecount/licensecountout
+      speccountfile:
+        source: speccount/speccountout
+      pdfaggregatecountfilename: pdfaggregatecountfilename
+    out:
+      [pdfaggregatecountout]
+  totalaggregator:
+    run: total-aggregator.cwl
+    in:
+      wordcountfile:
+        source: aggregator/aggregatecountout
+      pdfcountfile:
+        source: pdfaggregator/pdfaggregatecountout
+      totalcountfilename: totalcountfilename
+    out:
+      [totalcountout]
